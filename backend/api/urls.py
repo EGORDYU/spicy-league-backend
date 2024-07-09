@@ -4,7 +4,7 @@ from django.conf import settings
 from django.views.generic import TemplateView
 from django.contrib import admin
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import PlayerList, PlayerDetail, CustomTokenObtainPairView
+from .views import PlayerList, PlayerDetail, CustomTokenObtainPairView, UserRegistrationView
 
 urlpatterns = [
     path('players/', PlayerList.as_view(), name='player-list'),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('register/', UserRegistrationView.as_view(), name='register'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
