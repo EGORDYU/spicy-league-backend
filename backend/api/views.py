@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import BasePermission
 
 class PlayerList(generics.ListCreateAPIView):
     queryset = Player.objects.all()
@@ -25,23 +26,21 @@ class PlayerList(generics.ListCreateAPIView):
             return Player.objects.filter(user=self.request.user)
         return Player.objects.all()
 
+class IsOwner(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user
+
 class PlayerDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
 
     def get_permissions(self):
-        if self.request.method == 'GET':
-            return [AllowAny()]
-        return [IsAuthenticated()]
-
-    def get_queryset(self):
-        if self.request.method == 'GET':
-            return Player.objects.all()  # Allow viewing all players for GET requests
-        return Player.objects.filter(user=self.request.user)  # Restrict update/delete to the player's owner
+        if self.request.method in ['GET']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated(), IsOwner()]
 
     def get_serializer_context(self):
         return {'request': self.request}
-
 
 class VerifyTokenView(APIView):
     permission_classes = [IsAuthenticated]
