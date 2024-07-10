@@ -1,3 +1,5 @@
+# models.py
+from django.contrib.auth.models import User
 from django.db import models
 
 class Player(models.Model):
@@ -59,6 +61,7 @@ class Player(models.Model):
     leaguesecondaryrole = models.CharField(max_length=100, choices=LEAGUE_SECONDARY_ROLE, default='n/a')
     cs2elo = models.IntegerField(choices=CS2_ELO_CHOICES, default=0)
     profimage = models.CharField(max_length=255, default='https://t4.ftcdn.net/jpg/00/64/67/27/360_F_64672736_U5kpdGs9keUll8CRQ3p3YaEv2M6qkVY5.jpg')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='players', default=1)
 
     def __str__(self):
         return self.name

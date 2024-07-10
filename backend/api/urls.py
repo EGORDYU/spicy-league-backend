@@ -5,6 +5,7 @@ from django.views.generic import TemplateView
 from django.contrib import admin
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import PlayerList, PlayerDetail, CustomTokenObtainPairView, UserRegistrationView
+from .views import VerifyTokenView
 
 urlpatterns = [
     path('players/', PlayerList.as_view(), name='player-list'),

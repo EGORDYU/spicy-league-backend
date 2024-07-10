@@ -12,11 +12,28 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 
 
+
 class PlayerSerializer(serializers.ModelSerializer):
+    is_owner = serializers.SerializerMethodField()
+
     class Meta:
         model = Player
         fields = '__all__'
 
+    def get_is_owner(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            print(f"Authenticated user: {request.user}, Player owner: {obj.user}")
+            return obj.user == request.user
+        return False
+
+
+class UserSerializer(serializers.ModelSerializer):
+    players = PlayerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'players']
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -40,10 +57,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def get_token(cls, user):
         token = super().get_token(user)
-
         # Add custom claims
         token['username'] = user.username
-
         return token
     
 class UserRegistrationSerializer(serializers.ModelSerializer):
