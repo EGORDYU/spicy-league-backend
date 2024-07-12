@@ -10,9 +10,11 @@ from rest_framework.permissions import BasePermission
 from rest_framework import generics, status
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
-from .models import Event
-from .serializers import EventSerializer
+from .models import Event, Team
+from .serializers import EventSerializer, TeamSerializer
 from rest_framework.decorators import action
+from django.contrib.auth.models import User
+from django.db import transaction
 
 class PlayerList(generics.ListCreateAPIView):
     queryset = Player.objects.all()
@@ -62,6 +64,7 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         user_serializer = self.get_serializer(data=request.data)
         user_serializer.is_valid(raise_exception=True)
@@ -76,10 +79,11 @@ class UserRegistrationView(generics.CreateAPIView):
             'leaguesecondaryrole': request.data.get('leaguesecondaryrole', 'n/a'),
             'cs2elo': request.data.get('cs2elo', 0),
             'profimage': request.data.get('profimage', 'default_image_url'),
-            'user': user.id
+            'user': user.id  # Link the player to the newly created user
         }
 
-        player_serializer = PlayerSerializer(data=player_data)
+        # Add request context to the PlayerSerializer
+        player_serializer = PlayerSerializer(data=player_data, context={'request': request})
         player_serializer.is_valid(raise_exception=True)
         player_serializer.save()
 
@@ -103,7 +107,7 @@ class EventViewSet(viewsets.ModelViewSet):
         elif self.action == 'signup':
             self.permission_classes = [IsAuthenticated]
         else:
-            self.permission_classes = [IsAdminUser]
+            self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
 
     def perform_create(self, serializer):
@@ -114,3 +118,32 @@ class EventViewSet(viewsets.ModelViewSet):
         event = self.get_object()
         event.players.add(request.user)
         return Response({'status': 'signed up'}, status=status.HTTP_200_OK)
+    
+
+class TeamViewSet(viewsets.ModelViewSet):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        team_name = data.get('name')
+        event_id = data.get('event')
+        player_ids = data.get('players', [])
+
+        # Check if team already exists
+        team, created = Team.objects.get_or_create(name=team_name, event_id=event_id)
+
+        # Check and add players to the team
+        for player_id in player_ids:
+            try:
+                player = User.objects.get(id=player_id)
+                if team.players.filter(id=player.id).exists():
+                    continue
+                team.players.add(player)
+            except User.DoesNotExist:
+                return Response({'error': f'Player with id {player_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        team.save()
+        serializer = TeamSerializer(team)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

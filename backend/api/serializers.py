@@ -10,7 +10,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .models import Event
+from .models import Event, Team
 
 
 
@@ -19,12 +19,11 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = '__all__'
+        fields = ['id', 'name', 'starcraftrank', 'starcraftrace', 'leaguerank', 'leaguesecondaryrole', 'cs2elo', 'profimage', 'is_owner', 'user']
 
     def get_is_owner(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            print(f"Authenticated user: {request.user}, Player owner: {obj.user}")
             return obj.user == request.user
         return False
 
@@ -35,6 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'players']
+
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -83,4 +83,11 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
+        fields = '__all__'
+
+class TeamSerializer(serializers.ModelSerializer):
+    players = UserSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Team
         fields = '__all__'
