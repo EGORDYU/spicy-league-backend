@@ -7,6 +7,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import BasePermission
+from rest_framework import generics, status
+from rest_framework import viewsets
+from rest_framework.permissions import IsAdminUser
+from .models import Event
+from .serializers import EventSerializer
+from rest_framework.decorators import action
 
 class PlayerList(generics.ListCreateAPIView):
     queryset = Player.objects.all()
@@ -55,3 +61,56 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        user_serializer = self.get_serializer(data=request.data)
+        user_serializer.is_valid(raise_exception=True)
+        user = user_serializer.save()
+
+        player_data = {
+            'name': request.data.get('username'),
+            'starcraftrank': request.data.get('starcraftrank', 'n/a'),
+            'starcraftrace': request.data.get('starcraftrace', 'n/a'),
+            'leaguerank': request.data.get('leaguerank', 'n/a'),
+            'leaguerole': request.data.get('leaguerole', 'n/a'),
+            'leaguesecondaryrole': request.data.get('leaguesecondaryrole', 'n/a'),
+            'cs2elo': request.data.get('cs2elo', 0),
+            'profimage': request.data.get('profimage', 'default_image_url'),
+            'user': user.id
+        }
+
+        player_serializer = PlayerSerializer(data=player_data)
+        player_serializer.is_valid(raise_exception=True)
+        player_serializer.save()
+
+        return Response(user_serializer.data, status=status.HTTP_201_CREATED)
+
+class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    permission_classes = [IsAdminUser]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [AllowAny]
+        elif self.action == 'signup':
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [IsAdminUser]
+        return super().get_permissions()
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def signup(self, request, pk=None):
+        event = self.get_object()
+        event.players.add(request.user)
+        return Response({'status': 'signed up'}, status=status.HTTP_200_OK)
