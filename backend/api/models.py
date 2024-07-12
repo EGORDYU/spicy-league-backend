@@ -72,7 +72,7 @@ class Event(models.Model):
     date = models.DateField()
     game = models.CharField(max_length=100)
     teamsize = models.IntegerField()
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')
     players = models.ManyToManyField(User, related_name='signed_events', blank=True)
 
     def __str__(self):

@@ -79,6 +79,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     
 
 class EventSerializer(serializers.ModelSerializer):
+    players = UserSerializer(many=True, read_only=True)
+
     class Meta:
         model = Event
         fields = '__all__'
