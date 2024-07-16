@@ -93,4 +93,7 @@ class Team(models.Model):
     players = models.ManyToManyField(User, related_name='teams', blank=True)
 
     class Meta:
-        unique_together = ('id', 'name')
+        unique_together = ('name', 'event')
+
+    def __str__(self):
+        return self.name

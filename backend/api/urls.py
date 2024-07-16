@@ -8,6 +8,8 @@ from .views import PlayerList, PlayerDetail, CustomTokenObtainPairView, UserRegi
 from rest_framework.routers import DefaultRouter
 from .views import EventViewSet, TeamViewSet
 from rest_framework import routers
+from .views import get_csrf_token
+
 
 router = DefaultRouter()
 router.register(r'events', EventViewSet, basename='event')
@@ -16,6 +18,7 @@ router.register(r'teams', TeamViewSet, basename='team')
 urlpatterns = [
     path('', include(router.urls)),
     path('players/', PlayerList.as_view(), name='player-list'),
+    path('csrf-token/', get_csrf_token),
     path('players/<int:pk>/', PlayerDetail.as_view(), name='player-detail'),
     path('', TemplateView.as_view(template_name='index.html')),
     path('admin/', admin.site.urls),

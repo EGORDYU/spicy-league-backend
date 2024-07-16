@@ -28,7 +28,8 @@ SECRET_KEY = 'django-insecure-3_$p=o#h38xw@3eqmb3(^)&_in2cji^1y2wtwna-mkb@#sgfrf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['spicyleague.com', 'www.spicyleague.com', '127.0.0.1']
+
 
 
 # Application definition
@@ -60,7 +61,14 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://spicyleague.com"
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://spicyleague.com"
+]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 REST_FRAMEWORK = {

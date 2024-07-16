@@ -15,6 +15,9 @@ from .serializers import EventSerializer, TeamSerializer
 from rest_framework.decorators import action
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 
 class PlayerList(generics.ListCreateAPIView):
     queryset = Player.objects.all()
@@ -131,19 +134,28 @@ class TeamViewSet(viewsets.ModelViewSet):
         event_id = data.get('event')
         player_ids = data.get('players', [])
 
-        # Check if team already exists
-        team, created = Team.objects.get_or_create(name=team_name, event_id=event_id)
+        # Check if the event exists
+        try:
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            return Response({'error': 'Event does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create or get the team
+        team, created = Team.objects.get_or_create(name=team_name, event=event)
 
         # Check and add players to the team
         for player_id in player_ids:
             try:
                 player = User.objects.get(id=player_id)
-                if team.players.filter(id=player.id).exists():
-                    continue
-                team.players.add(player)
+                if not team.players.filter(id=player.id).exists():
+                    team.players.add(player)
             except User.DoesNotExist:
                 return Response({'error': f'Player with id {player_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
         team.save()
         serializer = TeamSerializer(team)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({"message": "CSRF cookie set"})
