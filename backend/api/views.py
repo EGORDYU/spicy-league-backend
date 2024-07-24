@@ -107,7 +107,7 @@ class EventViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             self.permission_classes = [AllowAny]
-        elif self.action == 'signup':
+        elif self.action in ['signup', 'cancel_signup']:
             self.permission_classes = [IsAuthenticated]
         else:
             self.permission_classes = [IsAuthenticated]
@@ -121,6 +121,12 @@ class EventViewSet(viewsets.ModelViewSet):
         event = self.get_object()
         event.players.add(request.user)
         return Response({'status': 'signed up'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def cancel_signup(self, request, pk=None):
+        event = self.get_object()
+        event.players.remove(request.user)
+        return Response({'status': 'signup canceled'}, status=status.HTTP_200_OK)
     
 
 class TeamViewSet(viewsets.ModelViewSet):

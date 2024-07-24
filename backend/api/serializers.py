@@ -19,7 +19,7 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = ['id', 'name', 'starcraftrank', 'starcraftrace', 'leaguerank','leaguerole', 'leaguesecondaryrole', 'cs2elo', 'profimage', 'is_owner', 'user']
+        fields = ['id', 'name', 'starcraftrank', 'starcraftrace', 'leaguerank','leaguerole', 'leaguesecondaryrole', 'cs2elo', 'profimage', 'is_owner', 'user', 'doodadlevel']
 
     def get_is_owner(self, obj):
         request = self.context.get('request')

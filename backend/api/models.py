@@ -50,7 +50,11 @@ class Player(models.Model):
         ('fill', 'Fill'),
         ('n/a', 'N/A')
     ]
-
+    DOODAD_HUNT_LEVEL = [
+        ('new', 'New'),
+        ('experienced', 'Experienced'),
+        ('expert', 'Expert')
+    ]
 
     CS2_ELO_CHOICES = [(i, str(i)) for i in range(0, 30001, 1000)]
 
@@ -63,7 +67,8 @@ class Player(models.Model):
     cs2elo = models.IntegerField(choices=CS2_ELO_CHOICES, default=0)
     profimage = models.CharField(max_length=255, default='default_image_url')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='players')
-
+    doodadlevel = models.CharField(choices=DOODAD_HUNT_LEVEL, default='new')
+    
     def __str__(self):
         return self.name
 

@@ -3,8 +3,8 @@ from .models import Player, Event, Team
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ('name','starcraftrank', 'starcraftrace', 'leaguerank', 'leaguerole', 'leaguesecondaryrole', 'cs2elo', 'profimage')
-    search_fields = ('name','starcraftrank', 'starcraftrace', 'leaguerank', 'leaguerole', 'leaguesecondaryrole', 'cs2elo', 'profimage')
+    list_display = ('name','starcraftrank', 'starcraftrace', 'leaguerank', 'leaguerole', 'leaguesecondaryrole', 'cs2elo', 'profimage', 'doodadlevel')
+    search_fields = ('name','starcraftrank', 'starcraftrace', 'leaguerank', 'leaguerole', 'leaguesecondaryrole', 'cs2elo', 'profimage', 'doodadlevel')
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
